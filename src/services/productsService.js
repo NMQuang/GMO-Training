@@ -10,14 +10,18 @@ import {
 
 var productsService = {};
 
-// Fetch all products
-// Return a list of product
+/**
+ * Fetch all products
+ * @param {} req
+ * @param {} res
+ * @return {List} a list of product
+ */
 productsService.getAllProduct = async (req, res) => {
     try {
         const products = await Product.findAll({
             attributes: ['id', 'name', 'price', 'status', 'imageUrl', 'brandId'],
             include: [{
-                model: Brand,
+                model: Brand
             }]
         });
         let apiProduct = new ApiResponseSuccess();
@@ -36,7 +40,12 @@ productsService.getAllProduct = async (req, res) => {
     }
 };
 
-//Get a product
+/**
+ * Fetch a product
+ * @param {} req
+ * @param {} res
+ * @return {Product} a product
+ */
 productsService.getProduct = async (req, res) => {
     const {
         id
@@ -53,6 +62,7 @@ productsService.getProduct = async (req, res) => {
                 required: false
             }]
         });
+
         if (products.length > 0) {
             let apiProduct = new ApiResponseSuccess();
             apiProduct.data = products;
@@ -78,26 +88,51 @@ productsService.getProduct = async (req, res) => {
     }
 };
 
-/** Search brand by product's name */
-productsService.findProduct = async (req, res) => {
-    const {
-        query
-    } = req.body;
+/**
+ * Search brand by product's name and pagination
+ * @param {} req
+ * @param {} res
+ * @return {List} a list of product
+ */
+productsService.findAndPaginationProduct = async (req, res) => {
+
+    // define condition in SQL
+    const condition = {
+        [Op.or]: [{
+            name: {
+                [Op.substring]: req.body.query
+            }
+        }, {
+            imageUrl: {
+                [Op.substring]: req.body.query
+            }
+        }]
+    };
+    // if (req.body.query) {
+    //     condition.name = {
+    //         [Op.substring]: req.body.query
+    //     }
+    // }
+    if (req.body.status) {
+        condition.status = {
+            [Op.in]: [0, req.body.status]
+        }
+    }
+
     try {
-        let products = await Product.findAll({
+        let products = await Product.findAndCountAll({
             attributes: ['id', 'name', 'price', 'status', 'imageUrl', 'brandId'],
-            where: {
-                name: {
-                    [Op.substring]: query
-                }
-            },
+            where: condition,
+            offset: 0,
+            limit: 3,
             include: [{
                 model: Brand,
                 as: 'brand',
-                required: false
+                required: true
             }]
         });
-        if (products.length > 0) {
+
+        if (products.rows.length > 0) {
             let apiProduct = new ApiResponseSuccess();
             apiProduct.data = products;
             apiProduct.message = common.parseMessage(constant.MSG_SUCCESS_1, ['product']);
@@ -122,8 +157,12 @@ productsService.findProduct = async (req, res) => {
     }
 };
 
-// Create a product
-// Return a new product
+/**
+ * Create a product
+ * @param {} req
+ * @param {} res
+ * @return {Product} a new product
+ */
 productsService.createProduct = async (req, res) => {
     const {
         name,
@@ -142,6 +181,7 @@ productsService.createProduct = async (req, res) => {
         }, {
             fields: ['name', 'price', 'status', 'imageUrl', 'brandId']
         });
+
         if (newProduct) {
             let apiProduct = new ApiResponseSuccess();
             apiProduct.data = newProduct;
@@ -160,8 +200,12 @@ productsService.createProduct = async (req, res) => {
     }
 };
 
-// Update Product
-// Return a updated Product
+/**
+ * Update a product
+ * @param {} req
+ * @param {} res
+ * @return {Product} a updated product
+ */
 productsService.editProduct = async (req, res) => {
     const {
         id
@@ -216,8 +260,12 @@ productsService.editProduct = async (req, res) => {
     }
 };
 
-// Delete a Product
-// Return a number deleted record
+/**
+ * Delete a product
+ * @param {} req
+ * @param {} res
+ * @return {int} a number deleted record
+ */
 productsService.deleteProduct = async (req, res) => {
     const {
         id
@@ -228,6 +276,7 @@ productsService.deleteProduct = async (req, res) => {
                 id
             }
         });
+
         if (countDeletedRecord > 0) {
             let apiProduct = new ApiResponseSuccess();
             apiProduct.data = countDeletedRecord;
@@ -243,7 +292,6 @@ productsService.deleteProduct = async (req, res) => {
                 apiProduct
             });
         }
-
     } catch (error) {
         let apiProduct = new ApiResponseError();
         apiProduct.data = 0;

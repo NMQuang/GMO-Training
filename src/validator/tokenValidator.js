@@ -15,7 +15,7 @@ tokenValidator.authorization = async (req, res, next) => {
             let apiAuth = new ApiResponseError();
             apiAuth.data = {};
             apiAuth.message = common.parseMessage(constant.MSG_AUTH_1, ['token']);
-            return res.status(404).json({
+            return res.status(401).json({
                 ...apiAuth,
                 'auth': false
             });

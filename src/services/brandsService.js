@@ -10,8 +10,12 @@ import {
 
 var brandsService = {};
 
-// Fetch all Brands
-// Return a list of Brand
+/**
+ * Fetch all brands
+ * @param {} req
+ * @param {} res
+ * @return {List} a list of brand
+ */
 brandsService.getAllBrand = async (req, res) => {
     try {
         const brands = await Brand.findAll({
@@ -33,7 +37,12 @@ brandsService.getAllBrand = async (req, res) => {
     }
 };
 
-//Get a brand
+/**
+ * Fetch a brand
+ * @param {} req
+ * @param {} res
+ * @return {Brand} a brand
+ */
 brandsService.getBrand = async (req, res) => {
     const {
         id
@@ -50,6 +59,7 @@ brandsService.getBrand = async (req, res) => {
                 required: false
             }]
         });
+
         if (brands.length > 0) {
             let apiBrand = new ApiResponseSuccess();
             apiBrand.data = brands;
@@ -75,7 +85,12 @@ brandsService.getBrand = async (req, res) => {
     }
 };
 
-/** Search brand by brand's name or brand's company */
+/**
+ * Search brand by brand's name or brand's company
+ * @param {} req
+ * @param {} res
+ * @return {List} a list of brand
+ */
 brandsService.findBrand = async (req, res) => {
     const {
         query
@@ -102,6 +117,7 @@ brandsService.findBrand = async (req, res) => {
                 required: false
             }]
         });
+
         if (brands.length > 0) {
             let apiBrand = new ApiResponseSuccess();
             apiBrand.data = brands;
@@ -127,8 +143,12 @@ brandsService.findBrand = async (req, res) => {
     }
 };
 
-// Create a brand
-// Return a new Brand
+/**
+ * Create a brand
+ * @param {} req
+ * @param {} res
+ * @return {Brand} a new brand
+ */
 brandsService.createBrand = async (req, res) => {
     const {
         name,
@@ -145,6 +165,7 @@ brandsService.createBrand = async (req, res) => {
         }, {
             fields: ['name', 'company', 'country', 'rate']
         });
+
         if (newBrand) {
             let apiBrand = new ApiResponseSuccess();
             apiBrand.data = newBrand;
@@ -163,8 +184,11 @@ brandsService.createBrand = async (req, res) => {
     }
 };
 
-/** Update Brand
- *  Return a updated Brand
+/**
+ * Update a brand
+ * @param {} req
+ * @param {} res
+ * @return {Brand} a updated brand
  */
 brandsService.editBrand = async (req, res) => {
     const {
@@ -218,8 +242,11 @@ brandsService.editBrand = async (req, res) => {
     }
 };
 
-/** Delete a Brand
- *  Return a number deleted record
+/**
+ * Delete a brand
+ * @param {} req
+ * @param {} res
+ * @return {int} a number deleted record
  */
 brandsService.deleteBrand = async (req, res) => {
     const {
@@ -251,7 +278,6 @@ brandsService.deleteBrand = async (req, res) => {
                 apiBrand
             });
         }
-
     } catch (error) {
         let apiBrand = new ApiResponseError();
         apiBrand.data = 0;
@@ -261,6 +287,5 @@ brandsService.deleteBrand = async (req, res) => {
         });
     }
 };
-
 
 export default brandsService;

@@ -6,7 +6,9 @@ import common from '../common/common.js'
 
 var userValidator = {};
 
+// check input value of model: user
 userValidator.checkValueUser = [
+    // check value of email
     body('email')
     .exists()
     .isEmail().withMessage(common.parseMessage(constant.MSG_ERROR_4, ['email']))
@@ -15,6 +17,8 @@ userValidator.checkValueUser = [
         max: 255
     }).withMessage(common.parseMessage(constant.MSG_ERROR_3, ['email', '1', '255']))
     .trim(),
+
+    // check value of password
     body('password')
     .exists()
     .isLength({

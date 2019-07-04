@@ -1,5 +1,7 @@
 import DataTypes from 'sequelize';
-import {sequelize} from '../config/database';
+import {
+    sequelize
+} from '../config/database';
 
 const User = sequelize.define('users', {
     id: {
@@ -25,7 +27,6 @@ const User = sequelize.define('users', {
 }, {
     timestamps: false,
 });
-
 
 export {
     User

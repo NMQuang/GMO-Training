@@ -12,7 +12,12 @@ import authConfig from '../config/auth';
 var tokenList = {};
 var usersService = {};
 
-/** Register a user */
+/**
+ * Register a product
+ * @param {} req
+ * @param {} res
+ * @return {User} a user
+ */
 usersService.register = async (req, res) => {
     const {
         email,
@@ -50,7 +55,12 @@ usersService.register = async (req, res) => {
     }
 };
 
-/** Login */
+/**
+ * Login
+ * @param {} req
+ * @param {} res
+ * @return {user}
+ */
 usersService.login = async (req, res) => {
     const {
         email,
@@ -115,7 +125,12 @@ usersService.login = async (req, res) => {
     }
 };
 
-/** resign a new access token by refresh token */
+/**
+ * resign a new access token by refresh token
+ * @param {} req
+ * @param {} res
+ * @return {User} a user with new access token
+ */
 usersService.refreshToken = async (req, res) => {
     const {
         refreshToken
@@ -166,7 +181,10 @@ usersService.refreshToken = async (req, res) => {
 }
 
 /**
- * Get info a user
+ * Fetch a user
+ * @param {} req
+ * @param {} res
+ * @return {User} a user
  */
 usersService.getUser = async (req, res) => {
     const {
@@ -184,4 +202,5 @@ usersService.getUser = async (req, res) => {
     });
 
 };
+
 export default usersService;

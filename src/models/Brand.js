@@ -1,7 +1,6 @@
 import DataTypes from 'sequelize';
 import {
-    sequelize,
-    Op
+    sequelize
 } from '../config/database';
 import Product from './Product';
 
@@ -28,6 +27,7 @@ const Brand = sequelize.define('brands', {
 }, {
     timestamps: false,
 });
+
 Brand.hasMany(Product, {
     foreignKey: 'brandId',
     sourceKey: 'id'
@@ -36,4 +36,5 @@ Product.belongsTo(Brand, {
     foreignKey: 'brandId',
     targetKey: 'id'
 });
+
 export default Brand;

@@ -2,8 +2,15 @@ import {
     validationResult
 } from 'express-validator';
 import ApiResponseError from '../common/ApiResponseError';
+
 var common = {};
 
+/**
+ * parse message with dynamic param
+ * @param {String} message
+ * @param {String[]} param
+ * @return {String} parsed message 
+ */
 common.parseMessage = (message, param) => {
     if (message === undefined || message === null || message.indexOf('%p') < 0) {
         return '';
@@ -12,6 +19,13 @@ common.parseMessage = (message, param) => {
     return message.replace(/%p/g, () => param[i++]);
 }
 
+/**
+ * check validate
+ * @param {} req
+ * @param {} res
+ * @param {} next
+ * @return {} error
+ */
 common.checkValidation = (req, res, next) => {
     var errorValidation = validationResult(req);
     if (!errorValidation.isEmpty()) {
