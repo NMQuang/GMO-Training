@@ -44,4 +44,9 @@ common.checkValidation = (req, res, next) => {
     }
     next();
 }
+
+// common.signJwt = (token, secret, option) => {
+
+// }
+
 export default common;

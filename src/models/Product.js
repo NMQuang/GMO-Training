@@ -2,7 +2,6 @@ import DataTypes from 'sequelize';
 import {
     sequelize
 } from '../config/database';
-import sequelizePaginate  from 'sequelize-paginate';
 
 const Product = sequelize.define('products', {
     id: {
@@ -32,7 +31,5 @@ const Product = sequelize.define('products', {
 }, {
     timestamps: false,
 });
-
-sequelizePaginate.paginate(Product);
 
 export default Product;

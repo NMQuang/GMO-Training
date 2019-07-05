@@ -13,7 +13,7 @@ usersRouter.post('/register', usersService.register);
 usersRouter.post('/login', userValidator.checkValueUser, common.checkValidation, usersService.login);
 
 // Fetch a user
-usersRouter.get('/', tokenValidator.authorization, usersService.getUser);
+usersRouter.get('/', usersService.getUser);
 
 // Recreate a access token by refresh token
 usersRouter.post('/refresh', usersService.refreshToken);

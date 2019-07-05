@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser';
 import logger from 'morgan';
 // import authorization from './auth/authorization';
 import indexRouter from './routes/index';
+import tokenValidator from './validator/tokenValidator';
 
 const app = express();
 
@@ -22,6 +23,6 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use('/', indexRouter);
+app.use('/', tokenValidator.authorization, indexRouter);
 
 export default app;
