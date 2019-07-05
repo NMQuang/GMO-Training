@@ -9,12 +9,16 @@ var tokenValidator = {}
 
 /** authorization */
 tokenValidator.authorization = async (req, res, next) => {
-    var urlOri = req.originalUrl;
+    const urlOri = req.originalUrl;
     var url = urlOri;
     console.log(/\d/.test(urlOri));
+
+    // split url if url containt a numeric
     if (/\d/.test(urlOri)) {
         url = urlOri.substring(0, urlOri.lastIndexOf('/'));
     }
+
+    // authentication url
     if (security.authenticationUrl.includes(url)) {
         const accessToken = req.headers['x-access-token'] || req.headers['authorization'];
 
@@ -27,7 +31,6 @@ tokenValidator.authorization = async (req, res, next) => {
                     ...apiAuth,
                     'auth': false
                 });
-                next();
             }
             // verify access token
             const decoded = await jwt.verify(accessToken, authConfig.secretToken);

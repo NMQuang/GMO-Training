@@ -2,7 +2,6 @@ import express from 'express';
 import path from 'path';
 import cookieParser from 'cookie-parser';
 import logger from 'morgan';
-// import authorization from './auth/authorization';
 import indexRouter from './routes/index';
 import tokenValidator from './validator/tokenValidator';
 

@@ -38,9 +38,9 @@ common.checkValidation = (req, res, next) => {
         let api = new ApiResponseError();
         api.data = {};
         api.message = errorList;
-        return res.status(400).json({
+        return res.status(400).json(
             api
-        });
+        );
     }
     next();
 }
