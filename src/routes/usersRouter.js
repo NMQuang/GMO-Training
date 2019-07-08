@@ -1,8 +1,6 @@
 import express from 'express';
 import usersService from '../services/usersService';
-import userValidator from './../validator/userValidator';
-import common from '../common/common';
-import tokenValidator from '../validator/tokenValidator';
+import usersValidator from '../validator/usersValidator';
 
 const usersRouter = express.Router();
 
@@ -10,7 +8,7 @@ const usersRouter = express.Router();
 usersRouter.post('/register', usersService.register);
 
 // Login
-usersRouter.post('/login', userValidator.checkValueUser, common.checkValidation, usersService.login);
+usersRouter.post('/login', usersValidator.validate, usersService.login);
 
 // Fetch a user
 usersRouter.get('/', usersService.getUser);

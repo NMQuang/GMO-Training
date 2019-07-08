@@ -1,12 +1,13 @@
 import Product from '../models/Product';
-import ApiResponseSuccess from '../common/ApiResponseSuccess';
 import ApiResponseError from '../common/ApiResponseError';
 import Brand from '../models/Brand';
 import common from '../common/common.js';
-import constant from '../constants/message.js';
+import message from '../constants/message.js';
 import {
     Op
 } from '../config/database';
+import MessageResponse from '../common/MessageResponse';
+import handleUtil from '../util/handleUtil';
 
 var productsService = {};
 
@@ -16,7 +17,7 @@ var productsService = {};
  * @param {} res
  * @return {List} a list of product
  */
-productsService.getAllProduct = async (req, res) => {
+productsService.getAllProduct = async (req, res, next) => {
     try {
         const products = await Product.findAll({
             attributes: ['id', 'name', 'price', 'status', 'imageUrl', 'brandId'],
@@ -24,19 +25,17 @@ productsService.getAllProduct = async (req, res) => {
                 model: Brand
             }]
         });
-        let apiProduct = new ApiResponseSuccess();
-        apiProduct.data = products;
-        apiProduct.message = common.parseMessage(constant.MSG_SUCCESS_0, ['product']);
-        return res.json({
-            apiProduct
-        });
+        // setting content of message
+        const messageResponse = new MessageResponse();
+        messageResponse.param = Product.name;
+        messageResponse.msg = message.MSG_SUCCESS_1;
+
+        // handle when successful
+        handleUtil.success(products, messageResponse, req, res);
+
     } catch (error) {
-        let apiProduct = new ApiResponseError();
-        apiProduct.data = {};
-        apiProduct.message = error;
-        return res.json({
-            apiProduct
-        });
+        // handle error system
+        handleUtil.exceptionSystem(error, next);
     }
 };
 
@@ -46,7 +45,7 @@ productsService.getAllProduct = async (req, res) => {
  * @param {} res
  * @return {Product} a product
  */
-productsService.getProduct = async (req, res) => {
+productsService.getProduct = async (req, res, next) => {
     const {
         id
     } = req.params;
@@ -64,27 +63,20 @@ productsService.getProduct = async (req, res) => {
         });
 
         if (products.length > 0) {
-            let apiProduct = new ApiResponseSuccess();
-            apiProduct.data = products;
-            apiProduct.message = common.parseMessage(constant.MSG_SUCCESS_1, ['product']);
-            return res.json({
-                apiProduct
-            });
+            // setting content of message
+            const messageResponse = new MessageResponse();
+            messageResponse.param = Product.name;
+            messageResponse.msg = message.MSG_SUCCESS_1;
+
+            // handle when successful
+            handleUtil.success(products, messageResponse, req, res);
         } else {
-            let apiProduct = new ApiResponseError();
-            apiProduct.data = {};
-            apiProduct.message = common.parseMessage(constant.MSG_FAILED_0, ['product']);
-            return res.json({
-                apiProduct
-            });
+            // handle error when data not found
+            handleUtil.exceptionNotFound(next);
         }
     } catch (error) {
-        let apiProduct = new ApiResponseError();
-        apiProduct.data = {};
-        apiProduct.message = error;
-        return res.json({
-            apiProduct
-        });
+        // handle error system
+        handleUtil.exceptionSystem(error, next);
     }
 };
 
@@ -94,7 +86,7 @@ productsService.getProduct = async (req, res) => {
  * @param {} res
  * @return {List} a list of product
  */
-productsService.findAndPaginationProduct = async (req, res) => {
+productsService.findAndPaginationProduct = async (req, res, next) => {
 
     // define condition in SQL
     const condition = {
@@ -113,11 +105,11 @@ productsService.findAndPaginationProduct = async (req, res) => {
     //         [Op.substring]: req.body.query
     //     }
     // }
-    if (req.body.status) {
-        condition.status = {
-            [Op.in]: [0, req.body.status]
-        }
-    }
+    // if (req.body.status) {
+    //     condition.status = {
+    //         [Op.in]: [0, req.body.status]
+    //     }
+    // }
 
     try {
         let products = await Product.findAndCountAll({
@@ -133,27 +125,20 @@ productsService.findAndPaginationProduct = async (req, res) => {
         });
 
         if (products.rows.length > 0) {
-            let apiProduct = new ApiResponseSuccess();
-            apiProduct.data = products;
-            apiProduct.message = common.parseMessage(constant.MSG_SUCCESS_1, ['product']);
-            return res.json({
-                apiProduct
-            });
+            // setting content of message
+            const messageResponse = new MessageResponse();
+            messageResponse.param = Product.name;
+            messageResponse.msg = message.MSG_SUCCESS_1;
+
+            // handle when successful
+            handleUtil.success(products.rows, messageResponse, req, res);
         } else {
-            let apiProduct = new ApiResponseError();
-            apiProduct.data = {};
-            apiProduct.message = common.parseMessage(constant.MSG_FAILED_0, ['product']);
-            return res.json({
-                apiProduct
-            });
+            // handle error when data not found
+            handleUtil.exceptionNotFound(next);
         }
     } catch (error) {
-        let apiProduct = new ApiResponseError();
-        apiProduct.data = {};
-        apiProduct.message = error;
-        return res.json({
-            apiProduct
-        });
+        // handle error system
+        handleUtil.exceptionSystem(error, next);
     }
 };
 
@@ -163,7 +148,7 @@ productsService.findAndPaginationProduct = async (req, res) => {
  * @param {} res
  * @return {Product} a new product
  */
-productsService.createProduct = async (req, res) => {
+productsService.createProduct = async (req, res, next) => {
     const {
         name,
         price,
@@ -183,20 +168,17 @@ productsService.createProduct = async (req, res) => {
         });
 
         if (newProduct) {
-            let apiProduct = new ApiResponseSuccess();
-            apiProduct.data = newProduct;
-            apiProduct.message = common.parseMessage(constant.MSG_SUCCESS_2, ['product']);
-            return res.json({
-                apiProduct
-            });
+            // setting content of message
+            const messageResponse = new MessageResponse();
+            messageResponse.param = Product.name;
+            messageResponse.msg = message.MSG_SUCCESS_2;
+
+            // handle when successful
+            handleUtil.success(newProduct, messageResponse, req, res);
         }
     } catch (error) {
-        let apiProduct = new ApiResponseError();
-        apiProduct.data = {};
-        apiProduct.message = error;
-        return res.json({
-            apiProduct
-        });
+        // handle error system
+        handleUtil.exceptionSystem(error, next);
     }
 };
 
@@ -206,7 +188,7 @@ productsService.createProduct = async (req, res) => {
  * @param {} res
  * @return {Product} a updated product
  */
-productsService.editProduct = async (req, res) => {
+productsService.editProduct = async (req, res, next) => {
     const {
         id
     } = req.params;
@@ -236,27 +218,20 @@ productsService.editProduct = async (req, res) => {
                     id
                 }
             });
-            let apiProduct = new ApiResponseSuccess();
-            apiProduct.data = product;
-            apiProduct.message = common.parseMessage(constant.MSG_SUCCESS_3, ['product']);
-            return res.json({
-                apiProduct
-            });
+            // setting content of message
+            const messageResponse = new MessageResponse();
+            messageResponse.param = Product.name;
+            messageResponse.msg = message.MSG_SUCCESS_3;
+
+            // handle when successful
+            handleUtil.success(product, messageResponse, req, res);
         } else {
-            let apiProduct = new ApiResponseError();
-            apiProduct.data = {};
-            apiProduct.message = common.parseMessage(constant.MSG_FAILED_1, ['product']);
-            return res.json({
-                apiProduct
-            });
+            // handle error when data not found
+            handleUtil.exceptionNotFound(next);
         }
     } catch (error) {
-        let apiProduct = new ApiResponseError();
-        apiProduct.data = {};
-        apiProduct.message = error;
-        return res.json({
-            apiProduct
-        });
+        // handle error system
+        handleUtil.exceptionSystem(error, next);
     }
 };
 
@@ -266,7 +241,7 @@ productsService.editProduct = async (req, res) => {
  * @param {} res
  * @return {int} a number deleted record
  */
-productsService.deleteProduct = async (req, res) => {
+productsService.deleteProduct = async (req, res, next) => {
     const {
         id
     } = req.params;
@@ -278,27 +253,20 @@ productsService.deleteProduct = async (req, res) => {
         });
 
         if (countDeletedRecord > 0) {
-            let apiProduct = new ApiResponseSuccess();
-            apiProduct.data = countDeletedRecord;
-            apiProduct.message = common.parseMessage(constant.MSG_SUCCESS_4, ['product']);
-            return res.json({
-                apiProduct
-            });
+            // setting content of message
+            const messageResponse = new MessageResponse();
+            messageResponse.param = Product.name;
+            messageResponse.msg = message.MSG_SUCCESS_4;
+
+            // handle when successful
+            handleUtil.success(countDeletedRecord, messageResponse, req, res);
         } else {
-            let apiProduct = new ApiResponseError();
-            apiProduct.data = 0;
-            apiProduct.message = common.parseMessage(constant.MSG_FAILED_2, ['product']);
-            res.json({
-                apiProduct
-            });
+            // handle error when data not found
+            handleUtil.exceptionNotFound(next);
         }
     } catch (error) {
-        let apiProduct = new ApiResponseError();
-        apiProduct.data = 0;
-        apiProduct.message = error;
-        return res.json({
-            apiProduct
-        });
+        // handle error system
+        handleUtil.exceptionSystem(error, next);
     }
 };
 

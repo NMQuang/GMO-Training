@@ -1,6 +1,8 @@
-const auth = {};
-auth.secretToken = 'secret-access-token';
-auth.expiresToken = '30d';
-auth.secretRefreshToken = 'secret-refresh-token';
-auth.expiresRefreshToken = '30d';
+const auth = {
+    secretToken: 'secret-access-token',
+    expiresToken: '30d',
+    secretRefreshToken: 'secret-refresh-token',
+    expiresRefreshToken: '30d'
+};
+
 export default auth;

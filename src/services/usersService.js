@@ -4,10 +4,11 @@ import ApiResponseError from './../common/ApiResponseError';
 import {
     User
 } from './../models/User';
-import constant from '../constants/message';
-import common from '../common/common';
+import message from '../constants/message';
 import jwt from 'jsonwebtoken';
 import authConfig from '../config/auth';
+import MessageResponse from '../common/MessageResponse';
+import handleUtil from '../util/handleUtil';
 
 var tokenList = {};
 var usersService = {};
@@ -18,7 +19,7 @@ var usersService = {};
  * @param {} res
  * @return {User} a user
  */
-usersService.register = async (req, res) => {
+usersService.register = async (req, res, next) => {
     const {
         email,
         password,
@@ -28,6 +29,7 @@ usersService.register = async (req, res) => {
     const saltRounds = 12;
     const salt = bcrypt.genSaltSync(saltRounds);
     const hashPassword = await bcrypt.hashSync(password, salt);
+
     try {
         let newUser = await User.create({
             email,
@@ -38,20 +40,17 @@ usersService.register = async (req, res) => {
             fields: ['email', 'password', 'name', 'role']
         });
         if (newUser) {
-            let apiUser = new ApiResponseSuccess();
-            apiUser.data = newUser;
-            apiUser.message = common.parseMessage(constant.MSG_SUCCESS_2, ['user']);
-            return res.json({
-                apiUser
-            });
+            // setting content of message
+            const messageResponse = new MessageResponse();
+            messageResponse.param = User.name;
+            messageResponse.msg = message.MSG_SUCCESS_2;
+
+            // handle when successful
+            handleUtil.success(newUser, messageResponse, req, res);
         }
     } catch (error) {
-        let apiUser = new ApiResponseError();
-        apiUser.data = {};
-        apiUser.message = error;
-        return res.json({
-            apiUser
-        });
+        // handle error system
+        handleUtil.exceptionSystem(error, next);
     }
 };
 
@@ -61,7 +60,7 @@ usersService.register = async (req, res) => {
  * @param {} res
  * @return {user}
  */
-usersService.login = async (req, res) => {
+usersService.login = async (req, res, next) => {
     const {
         email,
         password
@@ -74,13 +73,16 @@ usersService.login = async (req, res) => {
                 email
             }
         });
+
         if (user.length > 0) {
             let validPassword = await bcrypt.compareSync(password, user[0].dataValues.password);
+
             // create access token for user when login successfully
             if (validPassword) {
                 const payload = {
                     user
                 }
+
                 // create access token
                 const accessToken = await jwt.sign(payload, authConfig.secretToken, {
                     expiresIn: authConfig.expiresToken
@@ -91,37 +93,29 @@ usersService.login = async (req, res) => {
                 })
                 // save refresh token and information of user
                 tokenList[refreshToken] = user;
-                let apiUser = new ApiResponseSuccess();
-                apiUser.data = user;
-                apiUser.message = common.parseMessage(constant.MSG_SUCCESS_1, ['user']);
-                return res.json({
-                    ...apiUser,
-                    'accessToken': accessToken,
-                    'refreshToken': refreshToken
-                });
+
+                // setting content of message
+                const messageResponse = new MessageResponse();
+                messageResponse.param = User.name;
+                messageResponse.msg = message.MSG_SUCCESS_2;
+
+                // resetting propeties of model: User
+                user[0].dataValues.accessToken = accessToken;
+                user[0].dataValues.refreshToken = refreshToken;
+
+                // handle when successful
+                handleUtil.success(user[0].dataValues, messageResponse, req, res);
             } else {
-                let apiUser = new ApiResponseError();
-                apiUser.data = {};
-                apiUser.message = common.parseMessage(constant.MSG_FAILED_3, ['user']);
-                return res.json({
-                    apiUser
-                });
+                // handle error when data not found
+                handleUtil.exceptionNotFound(next);
             }
         } else {
-            let apiUser = new ApiResponseError();
-            apiUser.data = {};
-            apiUser.message = common.parseMessage(constant.MSG_FAILED_3, ['user']);
-            return res.json({
-                apiUser
-            });
+            // handle error when data not found
+            handleUtil.exceptionNotFound(next);
         }
     } catch (error) {
-        let apiUser = new ApiResponseError();
-        apiUser.data = {};
-        apiUser.message = error;
-        return res.json({
-            apiUser
-        });
+        // handle error system
+        handleUtil.exceptionSystem(error, next);
     }
 };
 
@@ -131,11 +125,10 @@ usersService.login = async (req, res) => {
  * @param {} res
  * @return {User} a user with new access token
  */
-usersService.refreshToken = async (req, res) => {
+usersService.refreshToken = async (req, res, next) => {
     const {
         refreshToken
     } = req.body;
-    console.log(tokenList);
     // check refresh token: exist in request
     if (refreshToken && refreshToken in tokenList) {
         try {
@@ -150,33 +143,25 @@ usersService.refreshToken = async (req, res) => {
             const accessToken = await jwt.sign(payload, authConfig.secretToken, {
                 expiresIn: authConfig.expiresToken
             });
-            let apiUser = new ApiResponseSuccess();
-            apiUser.data = user;
-            apiUser.message = common.parseMessage(constant.MSG_SUCCESS_1, ['token']);
-            return res.json({
-                ...apiUser,
-                'accessToken': accessToken,
-            });
+            // setting content of message
+            const messageResponse = new MessageResponse();
+            messageResponse.param = User.name;
+            messageResponse.msg = message.MSG_SUCCESS_1;
+
+            // resetting propeties of model: User
+            user[0].dataValues.accessToken = accessToken;
+
+            // handle when successful
+            handleUtil.success(user, messageResponse, req, res);
+
         } catch (error) {
-            let apiAuth = new ApiResponseError();
-            apiAuth.data = {};
-            apiAuth.message = {
-                'name': error.name,
-                'msg': error.message
-            };
-            return res.json({
-                ...apiAuth,
-                'auth': false
-            });
+
+            // handle error system
+            handleUtil.exceptionSystem(error, next);
         }
     } else {
-        let apiAuth = new ApiResponseError();
-        apiAuth.data = {};
-        apiAuth.message = common.parseMessage(constant.MSG_AUTH_3, ['refresh token']);
-        return res.status(404).json({
-            ...apiAuth,
-            'auth': false
-        });
+        // handle error authentication
+        handleUtil.exceptionAuthentication(next);
     }
 }
 
@@ -186,20 +171,23 @@ usersService.refreshToken = async (req, res) => {
  * @param {} res
  * @return {User} a user
  */
-usersService.getUser = async (req, res) => {
-    const {
+usersService.getUser = async (req, res, next) => {
+    let {
         accessToken,
         user
     } = req;
-    let apiUser = new ApiResponseSuccess();
-    apiUser.data = {
-        user,
+
+    user = [{
+        ...user,
         accessToken
-    };
-    apiUser.message = common.parseMessage(constant.MSG_SUCCESS_1, ['user']);
-    return res.status(200).json({
-        apiUser
-    });
+    }];
+    // setting content of message
+    const messageResponse = new MessageResponse();
+    messageResponse.param = User.name;
+    messageResponse.msg = message.MSG_SUCCESS_1;
+
+    // handle when successful
+    handleUtil.success(user, messageResponse, req, res);
 
 };
 

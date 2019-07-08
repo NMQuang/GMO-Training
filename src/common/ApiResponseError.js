@@ -1,11 +1,12 @@
 class ApiResponseError {
 
-    constructor(data, message, result = 'FAILED') {
+    constructor(message, resultCode, error, data = [], result = 'Failed') {
         this.result = result;
-        this.data = data;
         this.message = message;
+        this.resultCode = resultCode;
+        this.error = error;
+        this.data = data;
     }
-
 }
 
 export default ApiResponseError;

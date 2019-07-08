@@ -1,12 +1,11 @@
 import Brand from '../models/Brand';
 import Product from '../models/Product';
-import ApiResponseSuccess from '../common/ApiResponseSuccess';
-import ApiResponseError from '../common/ApiResponseError';
-import common from '../common/common.js';
-import constant from '../constants/message.js';
+import message from '../constants/message.js';
 import {
     Op
 } from '../config/database';
+import handleUtil from '../util/handleUtil';
+import MessageResponse from '../common/MessageResponse';
 
 var brandsService = {};
 
@@ -16,24 +15,21 @@ var brandsService = {};
  * @param {} res
  * @return {List} a list of brand
  */
-brandsService.getAllBrand = async (req, res) => {
+brandsService.getAllBrand = async (req, res, next) => {
     try {
         const brands = await Brand.findAll({
             attributes: ['id', 'name', 'company', 'country', 'rate'],
         });
-        let apiBrand = new ApiResponseSuccess();
-        apiBrand.data = brands;
-        apiBrand.message = common.parseMessage(constant.MSG_SUCCESS_0, ['brand']);
-        return res.json({
-            apiBrand
-        });
+        // setting content of message
+        const messageResponse = new MessageResponse();
+        messageResponse.param = Brand.name;
+        messageResponse.msg = message.MSG_SUCCESS_1;
+
+        // handle when successful
+        handleUtil.success(brands, messageResponse, req, res);
     } catch (error) {
-        let apiBrand = new ApiResponseError();
-        apiBrand.data = {};
-        apiBrand.message = error;
-        return res.json({
-            apiBrand
-        });
+        // handle error system
+        handleUtil.exceptionSystem(error, next);
     }
 };
 
@@ -61,27 +57,57 @@ brandsService.getBrand = async (req, res) => {
         });
 
         if (brands.length > 0) {
-            let apiBrand = new ApiResponseSuccess();
-            apiBrand.data = brands;
-            apiBrand.message = common.parseMessage(constant.MSG_SUCCESS_1, ['brand']);
-            return res.json({
-                apiBrand
-            });
+            // setting content of message
+            const messageResponse = new MessageResponse();
+            messageResponse.param = Brand.name;
+            messageResponse.msg = message.MSG_SUCCESS_1;
+
+            // handle when successful
+            handleUtil.success(brands, messageResponse, req, res);
         } else {
-            let apiBrand = new ApiResponseError();
-            apiBrand.data = {};
-            apiBrand.message = common.parseMessage(constant.MSG_FAILED_0, ['brand']);
-            return res.json({
-                apiBrand
-            });
+            // handle error when data not found
+            handleUtil.exceptionNotFound(next);
         }
     } catch (error) {
-        let apiBrand = new ApiResponseError();
-        apiBrand.data = {};
-        apiBrand.message = error;
-        return res.json({
-            apiBrand
-        });
+        // handle error system
+        handleUtil.exceptionSystem(error, next);
+    }
+};
+
+/**
+ * Fetch a brand
+ * @param {} req
+ * @param {} res
+ * @return {Brand} a brand
+ */
+brandsService.getBrandQuery = async (req, res, next) => {
+    const {
+        id
+    } = req.params;
+    try {
+        let brands = await Brand.sequelize.query('select * from brands where id = :id', {
+            replacements: {
+                id
+            },
+            type: Brand.sequelize.QueryTypes.SELECT
+        })
+
+        // check data is found or not
+        if (brands.length > 0) {
+            // setting content of message
+            const messageResponse = new MessageResponse();
+            messageResponse.param = Brand.name;
+            messageResponse.msg = message.MSG_SUCCESS_1;
+
+            // handle when successful
+            handleUtil.success(brands, messageResponse, req, res);
+        } else {
+            // handle error when data not found
+            handleUtil.exceptionNotFound(next);
+        }
+    } catch (error) {
+        // handle error system
+        handleUtil.exceptionSystem(error, next);
     }
 };
 
@@ -119,27 +145,21 @@ brandsService.findBrand = async (req, res) => {
         });
 
         if (brands.length > 0) {
-            let apiBrand = new ApiResponseSuccess();
-            apiBrand.data = brands;
-            apiBrand.message = common.parseMessage(constant.MSG_SUCCESS_1, ['brand']);
-            return res.json({
-                apiBrand
-            });
+            // setting content of message
+            const messageResponse = new MessageResponse();
+            messageResponse.param = Brand.name;
+            messageResponse.msg = message.MSG_SUCCESS_1;
+
+            // handle when successful
+            handleUtil.success(brands, messageResponse, req, res);
+
         } else {
-            let apiBrand = new ApiResponseError();
-            apiBrand.data = {};
-            apiBrand.message = common.parseMessage(constant.MSG_FAILED_0, ['brand']);
-            return res.json({
-                apiBrand
-            });
+            // handle error when data not found
+            handleUtil.exceptionNotFound(next);
         }
     } catch (error) {
-        let apiBrand = new ApiResponseError();
-        apiBrand.data = {};
-        apiBrand.message = error;
-        return res.json({
-            apiBrand
-        });
+        // handle error system
+        handleUtil.exceptionSystem(error, next);
     }
 };
 
@@ -167,20 +187,17 @@ brandsService.createBrand = async (req, res) => {
         });
 
         if (newBrand) {
-            let apiBrand = new ApiResponseSuccess();
-            apiBrand.data = newBrand;
-            apiBrand.message = common.parseMessage(constant.MSG_SUCCESS_2, ['brand']);
-            return res.json({
-                apiBrand
-            });
+            // setting content of message
+            const messageResponse = new MessageResponse();
+            messageResponse.param = Brand.name;
+            messageResponse.msg = message.MSG_SUCCESS_2;
+
+            // handle when successful
+            handleUtil.success(newBrand, messageResponse, req, res);
         }
     } catch (error) {
-        let apiBrand = new ApiResponseError();
-        apiBrand.data = {};
-        apiBrand.message = error;
-        return res.json({
-            apiBrand
-        });
+        // handle error system
+        handleUtil.exceptionSystem(error, next);
     }
 };
 
@@ -218,27 +235,20 @@ brandsService.editBrand = async (req, res) => {
                     id
                 }
             });
-            let apiBrand = new ApiResponseSuccess();
-            apiBrand.data = brand;
-            apiBrand.message = common.parseMessage(constant.MSG_SUCCESS_3, ['brand']);
-            return res.json({
-                apiBrand
-            });
+            // setting content of message
+            const messageResponse = new MessageResponse();
+            messageResponse.param = Brand.name;
+            messageResponse.msg = message.MSG_SUCCESS_3;
+
+            // handle when successful
+            handleUtil.success(brand, messageResponse, req, res);
         } else {
-            let apiBrand = new ApiResponseError();
-            apiBrand.data = {};
-            apiBrand.message = common.parseMessage(constant.MSG_FAILED_1, ['brand']);
-            return res.json({
-                apiBrand
-            });
+            // handle error when data not found
+            handleUtil.exceptionNotFound(next);
         }
     } catch (error) {
-        let apiBrand = new ApiResponseError();
-        apiBrand.data = {};
-        apiBrand.message = error;
-        return res.json({
-            apiBrand
-        });
+        // handle error system
+        handleUtil.exceptionSystem(error, next);
     }
 };
 
@@ -264,27 +274,20 @@ brandsService.deleteBrand = async (req, res) => {
             }
         });
         if (countDeletedRecord > 0) {
-            let apiBrand = new ApiResponseSuccess();
-            apiBrand.data = countDeletedRecord;
-            apiBrand.message = common.parseMessage(constant.MSG_SUCCESS_4, ['brand']);
-            return res.json({
-                apiBrand
-            });
+            // setting content of message
+            const messageResponse = new MessageResponse();
+            messageResponse.param = Brand.name;
+            messageResponse.msg = message.MSG_SUCCESS_4;
+
+            // handle when successful
+            handleUtil.success(countDeletedRecord, messageResponse, req, res);
         } else {
-            let apiBrand = new ApiResponseError();
-            apiBrand.data = 0;
-            apiBrand.message = common.parseMessage(constant.MSG_FAILED_2, ['brand']);
-            res.json({
-                apiBrand
-            });
+            // handle error when data not found
+            handleUtil.exceptionNotFound(next);
         }
     } catch (error) {
-        let apiBrand = new ApiResponseError();
-        apiBrand.data = 0;
-        apiBrand.message = error;
-        return res.json({
-            apiBrand
-        });
+        // handle error system
+        handleUtil.exceptionSystem(error, next);
     }
 };
 

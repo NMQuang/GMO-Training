@@ -1,7 +1,7 @@
 import express from 'express';
 import brandsService from '../services/brandsService';
-import brandValidator from '../validator/brandValidator';
-import common from '../common/common';
+import brandsValidator from '../validator/brandsValidator';
+import handleUtil from '../util/handleUtil';
 
 const brandsRouter = express.Router();
 
@@ -9,16 +9,16 @@ const brandsRouter = express.Router();
 brandsRouter.get('/', brandsService.getAllBrand);
 
 // Fetch a brand
-brandsRouter.get('/:id', brandsService.getBrand);
+brandsRouter.get('/:id', brandsService.getBrandQuery);
 
 // Search brand
 brandsRouter.post('/list', brandsService.findBrand);
 
 // Create a brand
-brandsRouter.post('/', brandValidator.checkValueBrand, common.checkValidation, brandsService.createBrand);
+brandsRouter.post('/', brandsValidator.validate, brandsService.createBrand);
 
 // Update a brand
-brandsRouter.put('/:id', brandValidator.checkValueBrand, common.checkValidation, brandsService.editBrand);
+brandsRouter.put('/:id', brandsValidator.validate, brandsService.editBrand);
 
 // Delete a brand
 brandsRouter.delete('/:id', brandsService.deleteBrand);
