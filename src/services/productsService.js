@@ -6,7 +6,7 @@ import {
 } from '../config/database';
 import MessageResponse from '../common/MessageResponse';
 import handleUtil from '../util/handleUtil';
-import productsSQL from '../sql/productsSQL';
+import productsSQL from '../sql/productsSql';
 import common from '../common/common';
 
 var productsService = {};
