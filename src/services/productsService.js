@@ -6,6 +6,8 @@ import {
 } from '../config/database';
 import MessageResponse from '../common/MessageResponse';
 import handleUtil from '../util/handleUtil';
+import productsSQL from '../SQL/productsSQL';
+import common from '../common/common';
 
 var productsService = {};
 
@@ -16,25 +18,21 @@ var productsService = {};
  * @return {List} a list of product
  */
 productsService.getAllProduct = async (req, res, next) => {
-    try {
-        const products = await Product.findAll({
+
+    // setting content of message
+    const messageResponse = new MessageResponse();
+    messageResponse.param = Product.name;
+    messageResponse.msg = message.MSG_SUCCESS_1;
+
+    // handle process data
+    common.processData(messageResponse, req, res, next, () => {
+        return Product.findAll({
             attributes: ['id', 'name', 'price', 'status', 'imageUrl', 'brandId'],
             include: [{
                 model: Brand
             }]
         });
-        // setting content of message
-        const messageResponse = new MessageResponse();
-        messageResponse.param = Product.name;
-        messageResponse.msg = message.MSG_SUCCESS_1;
-
-        // handle when successful
-        handleUtil.success(products, messageResponse, req, res);
-
-    } catch (error) {
-        // handle error system
-        handleUtil.exceptionSystem(error, next);
-    }
+    });
 };
 
 /**
@@ -47,8 +45,15 @@ productsService.getProduct = async (req, res, next) => {
     const {
         id
     } = req.params;
-    try {
-        let products = await Product.findAll({
+
+    // setting content of message
+    const messageResponse = new MessageResponse();
+    messageResponse.param = Product.name;
+    messageResponse.msg = message.MSG_SUCCESS_1;
+
+    // handle process data
+    common.processData(messageResponse, req, res, next, () => {
+        return Product.findAll({
             attributes: ['id', 'name', 'price', 'status', 'imageUrl', 'brandId'],
             where: {
                 id
@@ -59,23 +64,7 @@ productsService.getProduct = async (req, res, next) => {
                 required: false
             }]
         });
-
-        if (products.length > 0) {
-            // setting content of message
-            const messageResponse = new MessageResponse();
-            messageResponse.param = Product.name;
-            messageResponse.msg = message.MSG_SUCCESS_1;
-
-            // handle when successful
-            handleUtil.success(products, messageResponse, req, res);
-        } else {
-            // handle error when data not found
-            handleUtil.exceptionNotFound(next);
-        }
-    } catch (error) {
-        // handle error system
-        handleUtil.exceptionSystem(error, next);
-    }
+    });
 };
 
 /**
@@ -98,19 +87,15 @@ productsService.findAndPaginationProduct = async (req, res, next) => {
             }
         }]
     };
-    // if (req.body.query) {
-    //     condition.name = {
-    //         [Op.substring]: req.body.query
-    //     }
-    // }
-    // if (req.body.status) {
-    //     condition.status = {
-    //         [Op.in]: [0, req.body.status]
-    //     }
-    // }
 
-    try {
-        let products = await Product.findAndCountAll({
+    // setting content of message
+    const messageResponse = new MessageResponse();
+    messageResponse.param = Product.name;
+    messageResponse.msg = message.MSG_SUCCESS_1;
+
+    // handle process data
+    common.processData(messageResponse, req, res, next, () => {
+        return Product.findAndCountAll({
             attributes: ['id', 'name', 'price', 'status', 'imageUrl', 'brandId'],
             where: condition,
             offset: 0,
@@ -120,24 +105,36 @@ productsService.findAndPaginationProduct = async (req, res, next) => {
                 as: 'brand',
                 required: true
             }]
+        }).rows;
+    });
+};
+
+/**
+ * Search brand by product's name and pagination by query
+ * @param {} req
+ * @param {} res
+ * @return {List} a list of product
+ */
+productsService.findAndPaginationProductByQuery = async (req, res, next) => {
+
+    const {
+        query
+    } = req.body;
+
+    // setting content of message
+    const messageResponse = new MessageResponse();
+    messageResponse.param = Product.name;
+    messageResponse.msg = message.MSG_SUCCESS_1;
+
+    // handle process data
+    common.processData(messageResponse, req, res, next, () => {
+        return Product.sequelize.query(productsSQL.findAndPaginationProduct, {
+            replacements: {
+                query: '%' + query + '%'
+            },
+            type: Product.sequelize.QueryTypes.SELECT
         });
-
-        if (products.rows.length > 0) {
-            // setting content of message
-            const messageResponse = new MessageResponse();
-            messageResponse.param = Product.name;
-            messageResponse.msg = message.MSG_SUCCESS_1;
-
-            // handle when successful
-            handleUtil.success(products.rows, messageResponse, req, res);
-        } else {
-            // handle error when data not found
-            handleUtil.exceptionNotFound(next);
-        }
-    } catch (error) {
-        // handle error system
-        handleUtil.exceptionSystem(error, next);
-    }
+    });
 };
 
 /**
@@ -154,8 +151,15 @@ productsService.createProduct = async (req, res, next) => {
         image,
         brandId
     } = req.body;
-    try {
-        let newProduct = await Product.create({
+
+    // setting content of message
+    const messageResponse = new MessageResponse();
+    messageResponse.param = Product.name;
+    messageResponse.msg = message.MSG_SUCCESS_2;
+
+    // handle process data
+    common.processData(messageResponse, req, res, next, () => {
+        return Product.create({
             name,
             price,
             status,
@@ -164,20 +168,7 @@ productsService.createProduct = async (req, res, next) => {
         }, {
             fields: ['name', 'price', 'status', 'imageUrl', 'brandId']
         });
-
-        if (newProduct) {
-            // setting content of message
-            const messageResponse = new MessageResponse();
-            messageResponse.param = Product.name;
-            messageResponse.msg = message.MSG_SUCCESS_2;
-
-            // handle when successful
-            handleUtil.success(newProduct, messageResponse, req, res);
-        }
-    } catch (error) {
-        // handle error system
-        handleUtil.exceptionSystem(error, next);
-    }
+    });
 };
 
 /**
@@ -197,41 +188,32 @@ productsService.editProduct = async (req, res, next) => {
         image,
         brandId
     } = req.body;
-    try {
-        let product = await Product.findAll({
+
+    let product = await Product.findAll({
+        where: {
+            id
+        }
+    });
+    // setting content of message
+    const messageResponse = new MessageResponse();
+    messageResponse.param = Product.name;
+    messageResponse.msg = message.MSG_SUCCESS_3;
+
+    // handle process data
+    common.processData(messageResponse, req, res, next, () => {
+        return Product.update({
+            name: name ? name : product.name,
+            price: price ? price : product.price,
+            status: status ? status : product.status,
+            image: image ? image : product.image,
+            brandId: brandId ? brandId : product.brandId
+        }, {
             where: {
                 id
             }
         });
-
-        if (product.length > 0) {
-            await Product.update({
-                name: name ? name : Product.name,
-                price: price ? price : Product.price,
-                status: status ? status : Product.status,
-                image: image ? image : Product.image,
-                brandId: brandId ? brandId : Product.brandId
-            }, {
-                where: {
-                    id
-                }
-            });
-            // setting content of message
-            const messageResponse = new MessageResponse();
-            messageResponse.param = Product.name;
-            messageResponse.msg = message.MSG_SUCCESS_3;
-
-            // handle when successful
-            handleUtil.success(product, messageResponse, req, res);
-        } else {
-            // handle error when data not found
-            handleUtil.exceptionNotFound(next);
-        }
-    } catch (error) {
-        // handle error system
-        handleUtil.exceptionSystem(error, next);
-    }
-};
+    });
+}
 
 /**
  * Delete a product
@@ -243,29 +225,21 @@ productsService.deleteProduct = async (req, res, next) => {
     const {
         id
     } = req.params;
-    try {
-        let countDeletedRecord = await Product.destroy({
+
+    // setting content of message
+    const messageResponse = new MessageResponse();
+    messageResponse.param = Product.name;
+    messageResponse.msg = message.MSG_SUCCESS_4;
+
+    // handle process data
+    common.processData(messageResponse, req, res, next, () => {
+        return Product.destroy({
             where: {
                 id
             }
         });
+    });
 
-        if (countDeletedRecord > 0) {
-            // setting content of message
-            const messageResponse = new MessageResponse();
-            messageResponse.param = Product.name;
-            messageResponse.msg = message.MSG_SUCCESS_4;
-
-            // handle when successful
-            handleUtil.success(countDeletedRecord, messageResponse, req, res);
-        } else {
-            // handle error when data not found
-            handleUtil.exceptionNotFound(next);
-        }
-    } catch (error) {
-        // handle error system
-        handleUtil.exceptionSystem(error, next);
-    }
 };
 
 export default productsService;

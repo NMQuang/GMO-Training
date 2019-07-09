@@ -1,3 +1,5 @@
+import handleUtil from "../util/handleUtil";
+
 var common = {};
 
 /**
@@ -27,5 +29,23 @@ common.splitString = (url => url.substring(0, url.lastIndexOf('/')));
  * @return {Boolean}
  */
 common.checkContain = (str => /\d/.test(str));
+
+common.processData = async (messageResponse, req, res, next, callback) => {
+    try {
+
+        // handle callback: process data
+        const result = await callback();
+        if (result > 0 || result.length > 0) {
+            // handle when successful
+            handleUtil.success(result, messageResponse, req, res);
+        } else {
+            // handle error when data not found
+            handleUtil.exceptionNotFound(next);
+        }
+    } catch (error) {
+        // handle error system
+        handleUtil.exceptionSystem(error, next);
+    }
+};
 
 export default common;

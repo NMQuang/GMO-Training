@@ -11,7 +11,7 @@ productsRouter.get('/', productsService.getAllProduct);
 productsRouter.get('/:id', productsService.getProduct);
 
 // Search product
-productsRouter.post('/list', productsService.findAndPaginationProduct);
+productsRouter.post('/list', productsService.findAndPaginationProductByQuery);
 
 // Create a product
 productsRouter.post('/', productsValidator.validate, productsService.createProduct);

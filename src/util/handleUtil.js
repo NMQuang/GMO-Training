@@ -7,6 +7,7 @@ import MessageResponse from '../common/MessageResponse';
 import resultCode from '../constants/resultCode';
 import ApiResponseSuccess from '../common/ApiResponseSuccess';
 import jwtUtil from './jwtUtil';
+import status from '../constants/status';
 
 /**
  * handle common:
@@ -59,14 +60,15 @@ handleUtil.authorization = async (req, res, next) => {
                     // handle error authentication when toke is expired
                     let messageResponse = new MessageResponse(['token'], message.MSG_AUTH_4);
                     handleUtil.exceptionAuthentication(messageResponse, next);
+                } else {
+
+                    // set user and access token for request
+                    req.accessToken = accessToken;
+                    req.user = decoded.user[0];
+
+                    // go to middleware: getUser
+                    next();
                 }
-
-                // set user and access token for request
-                req.accessToken = accessToken;
-                req.user = decoded.user[0];
-
-                // go to middleware: getUser
-                next();
             }
         } catch (error) {
             // handle error system
@@ -95,8 +97,11 @@ handleUtil.exceptionNotFound = (next) => {
 handleUtil.exceptionSystem = (error, next) => {
     if (error.name === 'SequelizeDatabaseError') {
         error.resultCode = resultCode.CODE_ERROR_SQL;
+    } else if (error.name === 'JsonWebTokenError') {
+        error.resultCode = resultCode.CODE_ERROR_TOKEN;
+    } else {
+        error.resultCode = resultCode.CODE_ERROR;
     }
-    error.resultCode = resultCode.CODE_ERROR;
     next(error);
 };
 
@@ -135,7 +140,6 @@ handleUtil.exceptionAuthentication = (message, next) => {
 handleUtil.error = (error, req, res, next) => {
 
     var responseError = new ApiResponseError();
-
     // control result code of error
     switch (error.resultCode) {
 
@@ -145,6 +149,17 @@ handleUtil.error = (error, req, res, next) => {
             responseError.resultCode = resultCode.CODE_ERROR;
             let err = new MessageResponse(error.name, error.message);
             responseError.error = err;
+            res.status(status.STT_ERROR_NOTFOUND);
+            break;
+        }
+
+        // error token
+        case resultCode.CODE_ERROR_TOKEN: {
+            responseError.message = common.parseMessage(message.MSG_AUTH_2, ['token']);
+            responseError.resultCode = resultCode.CODE_ERROR_TOKEN;
+            let err = new MessageResponse(error.name, error.message);
+            responseError.error = err;
+            res.status(status.STT_ERROR_AUTH);
             break;
         }
 
@@ -154,6 +169,7 @@ handleUtil.error = (error, req, res, next) => {
             responseError.resultCode = resultCode.CODE_ERROR;
             let err = new MessageResponse(error.name, error.original.sqlMessage);
             responseError.error = err;
+            res.status(status.STT_ERROR_BAD);
             break;
         }
 
@@ -165,6 +181,7 @@ handleUtil.error = (error, req, res, next) => {
                 return new MessageResponse(err.param, err.msg);
             });
             responseError.error = err;
+            res.status(status.STT_ERROR_CREATE);
             break;
         }
 
@@ -173,6 +190,7 @@ handleUtil.error = (error, req, res, next) => {
             responseError.message = common.parseMessage(message.MSG_ERROR_6, ['']);
             responseError.resultCode = resultCode.CODE_ERROR_NOTFOUND;
             responseError.error = [];
+            res.status(status.STT_ERROR_NOTFOUND);
             break;
         }
 
@@ -181,6 +199,7 @@ handleUtil.error = (error, req, res, next) => {
             responseError.message = common.parseMessage(error.message.msg, error.message.param);
             responseError.resultCode = error.resultCode;
             responseError.error = [];
+            res.status(status.STT_ERROR_AUTH);
             break;
         }
         default: {
@@ -204,6 +223,7 @@ handleUtil.success = (data, messageResponse, req, res) => {
     responseSuccess.data = data;
     responseSuccess.resultCode = resultCode.CODE_SUCCESS;
     responseSuccess.message = common.parseMessage(messageResponse.msg, [messageResponse.param]);
+    res.status(status.STT_SUCCESS_OK);
     return res.json(responseSuccess);
 }
 

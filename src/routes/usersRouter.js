@@ -5,7 +5,7 @@ import usersValidator from '../validator/usersValidator';
 const usersRouter = express.Router();
 
 // Register a new user
-usersRouter.post('/register', usersService.register);
+usersRouter.post('/register', usersValidator.validate, usersService.register);
 
 // Login
 usersRouter.post('/login', usersValidator.validate, usersService.login);
