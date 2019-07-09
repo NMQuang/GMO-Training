@@ -1,4 +1,3 @@
-import jwt from 'jsonwebtoken';
 import authConfig from '../config/auth';
 import common from '../common/common';
 import message from '../constants/message';
@@ -7,64 +6,72 @@ import security from '../auth/security';
 import MessageResponse from '../common/MessageResponse';
 import resultCode from '../constants/resultCode';
 import ApiResponseSuccess from '../common/ApiResponseSuccess';
+import jwtUtil from './jwtUtil';
 
+/**
+ * handle common:
+ * authentication
+ * exception
+ * error
+ * success
+ */
 var handleUtil = {}
 
-/** authorization */
+/**
+ * authorization
+ * @param {} req
+ * @param {} res
+ * @param {} next
+ */
 handleUtil.authorization = async (req, res, next) => {
 
     // get original url
     const urlOri = req.originalUrl;
     var url = urlOri;
 
-    // split url if url containt a numeric
-    if (/\d/.test(urlOri)) {
-        url = urlOri.substring(0, urlOri.lastIndexOf('/'));
+    // split url if url contain a numeric
+    if (common.checkContain(urlOri)) {
+        url = common.splitString(urlOri);
     }
 
     /**
      * authentication url
-     * if true: authentication url
-     * if false: don't authenticate url
+     * if true: don't need to authenticate url
+     * if false: must authentication url
      */
     if (security.authenticationUrl.includes(url)) {
-        const accessToken = req.headers['x-access-token'] || req.headers['authorization']; //todo
+        next();
+    } else {
+        const accessToken = req.headers['x-access-token'];
 
         try {
             if (!accessToken) {
-                let apiAuth = new ApiResponseError();
-                apiAuth.data = {};
-                apiAuth.message = common.parseMessage(message.MSG_AUTH_1, ['token']);
-                return res.status(401).json({
-                    ...apiAuth,
-                    'auth': false
-                });
-            }
-            // verify access token
-            const decoded = await jwt.verify(accessToken, authConfig.secretToken);
-            // check access token expired or not
-            if (decoded.exp * 1000 <= Date.now()) {
-                let apiAuth = new ApiResponseError();
-                apiAuth.data = {};
-                apiAuth.message = common.parseMessage(message.MSG_AUTH_4, ['token']);
-                return res.status(401).json({
-                    ...apiAuth,
-                    'auth': false
-                });
-            }
 
-            // set user and access token for request
-            req.accessToken = accessToken;
-            req.user = decoded.user[0];
+                // handle error authentication when don't have token
+                let messageResponse = new MessageResponse(['token'], message.MSG_AUTH_1);
+                handleUtil.exceptionAuthentication(messageResponse, next);
+            } else {
+                // verify access token
+                const decoded = await jwtUtil.verifyToken(accessToken, authConfig.secretToken);
+                // check access token expired or not
+                if (decoded.exp * 1000 <= Date.now()) {
 
-            // go to middleware: getUser
-            next();
+                    // handle error authentication when toke is expired
+                    let messageResponse = new MessageResponse(['token'], message.MSG_AUTH_4);
+                    handleUtil.exceptionAuthentication(messageResponse, next);
+                }
+
+                // set user and access token for request
+                req.accessToken = accessToken;
+                req.user = decoded.user[0];
+
+                // go to middleware: getUser
+                next();
+            }
         } catch (error) {
             // handle error system
             handleUtil.exceptionSystem(error, next);
         }
-    } else {
-        next();
     }
 };
 
@@ -106,11 +113,13 @@ handleUtil.exceptionValidate = (error, next) => {
 
 /**
  * handle error token
+ * @param {MessageResponse} message
  * @param {} next
  * @return {} next to middeware
  */
-handleUtil.exceptionAuthentication = (next) => {
+handleUtil.exceptionAuthentication = (message, next) => {
     let error = {};
+    error.message = message;
     error.resultCode = resultCode.CODE_ERROR_AUTHENTICATION;
     next(error);
 }
@@ -169,8 +178,8 @@ handleUtil.error = (error, req, res, next) => {
 
         // error authentication
         case resultCode.CODE_ERROR_AUTHENTICATION: {
-            responseError.message = common.parseMessage(message.MSG_AUTH_3, ['refresh token']);
-            responseError.resultCode = resultCode.CODE_ERROR_AUTHENTICATION;
+            responseError.message = common.parseMessage(error.message.msg, error.message.param);
+            responseError.resultCode = error.resultCode;
             responseError.error = [];
             break;
         }

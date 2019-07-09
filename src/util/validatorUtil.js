@@ -3,6 +3,9 @@ import {
 } from 'express-validator';
 import handleUtil from './handleUtil';
 
+/**
+ * check validate
+ */
 const validatorUtil = {};
 
 /**

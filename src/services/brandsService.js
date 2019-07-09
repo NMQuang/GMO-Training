@@ -39,7 +39,7 @@ brandsService.getAllBrand = async (req, res, next) => {
  * @param {} res
  * @return {Brand} a brand
  */
-brandsService.getBrand = async (req, res) => {
+brandsService.getBrand = async (req, res, next) => {
     const {
         id
     } = req.params;
@@ -117,7 +117,7 @@ brandsService.getBrandQuery = async (req, res, next) => {
  * @param {} res
  * @return {List} a list of brand
  */
-brandsService.findBrand = async (req, res) => {
+brandsService.findBrand = async (req, res, next) => {
     const {
         query
     } = req.body;
@@ -169,7 +169,7 @@ brandsService.findBrand = async (req, res) => {
  * @param {} res
  * @return {Brand} a new brand
  */
-brandsService.createBrand = async (req, res) => {
+brandsService.createBrand = async (req, res, next) => {
     const {
         name,
         company,
@@ -207,7 +207,7 @@ brandsService.createBrand = async (req, res) => {
  * @param {} res
  * @return {Brand} a updated brand
  */
-brandsService.editBrand = async (req, res) => {
+brandsService.editBrand = async (req, res, next) => {
     const {
         id
     } = req.params;
@@ -258,7 +258,7 @@ brandsService.editBrand = async (req, res) => {
  * @param {} res
  * @return {int} a number deleted record
  */
-brandsService.deleteBrand = async (req, res) => {
+brandsService.deleteBrand = async (req, res, next) => {
     const {
         id
     } = req.params;

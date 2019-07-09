@@ -1,14 +1,11 @@
-import bcrypt from 'bcrypt';
-import ApiResponseSuccess from './../common/ApiResponseSuccess';
-import ApiResponseError from './../common/ApiResponseError';
 import {
     User
 } from './../models/User';
 import message from '../constants/message';
-import jwt from 'jsonwebtoken';
 import authConfig from '../config/auth';
 import MessageResponse from '../common/MessageResponse';
 import handleUtil from '../util/handleUtil';
+import jwtUtil from '../util/jwtUtil';
 
 var tokenList = {};
 var usersService = {};
@@ -26,9 +23,10 @@ usersService.register = async (req, res, next) => {
         name,
         role
     } = req.body;
+
+    // hash password
     const saltRounds = 12;
-    const salt = bcrypt.genSaltSync(saltRounds);
-    const hashPassword = await bcrypt.hashSync(password, salt);
+    const hashPassword = await jwtUtil.hashJwt(password, saltRounds);
 
     try {
         let newUser = await User.create({
@@ -75,7 +73,8 @@ usersService.login = async (req, res, next) => {
         });
 
         if (user.length > 0) {
-            let validPassword = await bcrypt.compareSync(password, user[0].dataValues.password);
+            // check password
+            let validPassword = await jwtUtil.comparePassword(password, user[0].dataValues.password);
 
             // create access token for user when login successfully
             if (validPassword) {
@@ -84,11 +83,11 @@ usersService.login = async (req, res, next) => {
                 }
 
                 // create access token
-                const accessToken = await jwt.sign(payload, authConfig.secretToken, {
+                const accessToken = await jwtUtil.signToken(payload, authConfig.secretToken, {
                     expiresIn: authConfig.expiresToken
                 });
                 // create refresh token to update access token
-                const refreshToken = await jwt.sign(payload, authConfig.secretRefreshToken, {
+                const refreshToken = await jwtUtil.signToken(payload, authConfig.secretRefreshToken, {
                     expiresIn: authConfig.expiresRefreshToken
                 })
                 // save refresh token and information of user
@@ -133,14 +132,14 @@ usersService.refreshToken = async (req, res, next) => {
     if (refreshToken && refreshToken in tokenList) {
         try {
             // verify refresh token
-            await jwt.verify(refreshToken, authConfig.secretRefreshToken);
+            await jwtUtil.verifyToken(refreshToken, authConfig.secretRefreshToken);
             // get user from refresh token
             const user = tokenList[refreshToken];
             const payload = {
                 user
             }
             //create a new access token for this user
-            const accessToken = await jwt.sign(payload, authConfig.secretToken, {
+            const accessToken = await jwtUtil.signToken(payload, authConfig.secretToken, {
                 expiresIn: authConfig.expiresToken
             });
             // setting content of message
@@ -161,7 +160,8 @@ usersService.refreshToken = async (req, res, next) => {
         }
     } else {
         // handle error authentication
-        handleUtil.exceptionAuthentication(next);
+        let messageResponse = new MessageResponse(['refresh token'], message.MSG_AUTH_3);
+        handleUtil.exceptionAuthentication(messageResponse, next);
     }
 }
 

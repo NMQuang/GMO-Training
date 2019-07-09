@@ -1,5 +1,6 @@
 const security = {};
 
-security.authenticationUrl = ['/brands', '/brands/list', '/products', '/products/list', '/users'];
+// List contain unauthentication url
+security.authenticationUrl = ['/users/register', '/users/refresh', '/users/login'];
 
 export default security;
