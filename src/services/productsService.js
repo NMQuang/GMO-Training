@@ -6,7 +6,7 @@ import {
 } from '../config/database';
 import MessageResponse from '../common/MessageResponse';
 import handleUtil from '../util/handleUtil';
-import productsSQL from '../SQL/productsSQL';
+import productsSQL from '../sql/productsSQL';
 import common from '../common/common';
 
 var productsService = {};
@@ -118,7 +118,9 @@ productsService.findAndPaginationProduct = async (req, res, next) => {
 productsService.findAndPaginationProductByQuery = async (req, res, next) => {
 
     const {
-        query
+        query,
+        offset,
+        limit
     } = req.body;
 
     // setting content of message
@@ -130,7 +132,9 @@ productsService.findAndPaginationProductByQuery = async (req, res, next) => {
     common.processData(messageResponse, req, res, next, () => {
         return Product.sequelize.query(productsSQL.findAndPaginationProduct, {
             replacements: {
-                query: '%' + query + '%'
+                query: '%' + query + '%',
+                offset,
+                limit
             },
             type: Product.sequelize.QueryTypes.SELECT
         });

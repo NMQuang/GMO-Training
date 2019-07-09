@@ -19,9 +19,10 @@ common.parseMessage = (message, param) => {
 /**
  * split a string
  * @param {String} url
+ * @param {String} op
  * @return {String} splited string
  */
-common.splitString = (url => url.substring(0, url.lastIndexOf('/')));
+common.splitString = (url, op) => url.substring(0, url.lastIndexOf(op));
 
 /**
  * check a string contain numeric or not
@@ -30,9 +31,17 @@ common.splitString = (url => url.substring(0, url.lastIndexOf('/')));
  */
 common.checkContain = (str => /\d/.test(str));
 
+
+/**
+ * handle process data
+ * @param {MessageResponse} messageResponse
+ * @param {} req
+ * @param {} res
+ * @param {} next
+ * @param {function} callback
+ */
 common.processData = async (messageResponse, req, res, next, callback) => {
     try {
-
         // handle callback: process data
         const result = await callback();
         if (result > 0 || result.length > 0) {
@@ -47,5 +56,11 @@ common.processData = async (messageResponse, req, res, next, callback) => {
         handleUtil.exceptionSystem(error, next);
     }
 };
+
+// common.handleSql = sql => {
+//     const sqlCount = 'COUNT(*)';
+//     common.splitString(sql,'FROM');
+//     return sql.replace(common.splitString(sql,'FROM'), () => param[i++]);
+// };
 
 export default common;

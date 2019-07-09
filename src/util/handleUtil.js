@@ -32,7 +32,7 @@ handleUtil.authorization = async (req, res, next) => {
 
     // split url if url contain a numeric
     if (common.checkContain(urlOri)) {
-        url = common.splitString(urlOri);
+        url = common.splitString(urlOri, '/');
     }
 
     /**
