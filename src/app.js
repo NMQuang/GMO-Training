@@ -23,8 +23,11 @@ app.use(express.static(path.join(__dirname, '../public')));
 
 // define header of response
 app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "http://localhost:3000"); //* will allow from all cross domain
+    // will allow from all cross domain
+    res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+    
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    // will allow from methods: GET, POST. PUT, DELETE, OPTIONS
     res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
     next();
 });
