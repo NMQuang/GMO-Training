@@ -3,7 +3,8 @@ import path from 'path';
 import cookieParser from 'cookie-parser';
 import logger from 'morgan';
 import indexRouter from './routes/index';
-import handleUtil from './util/handleUtil';
+import handleError from './handlers/handleError';
+import handleAuth from './handlers/handleAuth';
 
 // define 1 express to control application
 const app = express();
@@ -25,7 +26,7 @@ app.use(express.static(path.join(__dirname, '../public')));
 app.use((req, res, next) => {
     // will allow from all cross domain
     res.header("Access-Control-Allow-Origin", "http://localhost:3000");
-    
+
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     // will allow from methods: GET, POST. PUT, DELETE, OPTIONS
     res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
@@ -33,6 +34,6 @@ app.use((req, res, next) => {
 });
 
 // define root router to control all request and response
-app.use('/', handleUtil.authorization, indexRouter, handleUtil.error);
+app.use('/', handleAuth.authorization, indexRouter, handleError.processError);
 
 export default app;

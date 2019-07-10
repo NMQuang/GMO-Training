@@ -1,4 +1,5 @@
-import handleUtil from "../util/handleUtil";
+import handleError from "../handlers/handleError";
+import handleSuccess from "../handlers/handleSuccess";
 
 var common = {};
 
@@ -46,14 +47,14 @@ common.processData = async (messageResponse, req, res, next, callback) => {
         const result = await callback();
         if (result > 0 || result.length > 0) {
             // handle when successful
-            handleUtil.success(result, messageResponse, req, res);
+            handleSuccess.processSuccess(result, messageResponse, req, res);
         } else {
             // handle error when data not found
-            handleUtil.exceptionNotFound(next);
+            handleError.exceptionNotFound(next);
         }
     } catch (error) {
         // handle error system
-        handleUtil.exceptionSystem(error, next);
+        handleError.exceptionSystem(error, next);
     }
 };
 

@@ -1,7 +1,7 @@
 import {
     validationResult
 } from 'express-validator';
-import handleUtil from './handleUtil';
+import handleError from '../handlers/handleError';
 
 /**
  * check validate
@@ -25,7 +25,7 @@ validatorUtil.validate = (req, res, next) => {
      * if dont have error: go to next()
      */
     if (!error.isEmpty()) {
-        handleUtil.exceptionValidate(error, next);
+        handleError.exceptionValidate(error, next);
     } else {
         next();
     }

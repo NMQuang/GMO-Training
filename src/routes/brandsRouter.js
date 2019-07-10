@@ -1,7 +1,6 @@
 import express from 'express';
 import brandsService from '../services/brandsService';
 import brandsValidator from '../validator/brandsValidator';
-import handleUtil from '../util/handleUtil';
 
 const brandsRouter = express.Router();
 

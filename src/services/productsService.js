@@ -1,7 +1,9 @@
 import Product from "../models/Product";
 import Brand from "../models/Brand";
 import message from "../constants/message.js";
-import { Op } from "../config/database";
+import {
+  Op
+} from "../config/database";
 import MessageResponse from "../common/MessageResponse";
 import productsSQL from "../sqls/productsSql";
 import common from "../common/common";
@@ -24,11 +26,9 @@ productsService.getAllProduct = async (req, res, next) => {
   common.processData(messageResponse, req, res, next, () => {
     return Product.findAll({
       attributes: ["id", "name", "price", "status", "imageUrl", "brandId"],
-      include: [
-        {
-          model: Brand
-        }
-      ]
+      include: [{
+        model: Brand
+      }]
     });
   });
 };
@@ -40,7 +40,9 @@ productsService.getAllProduct = async (req, res, next) => {
  * @return {Product} a product
  */
 productsService.getProduct = async (req, res, next) => {
-  const { id } = req.params;
+  const {
+    id
+  } = req.params;
 
   // setting content of message
   const messageResponse = new MessageResponse();
@@ -54,13 +56,11 @@ productsService.getProduct = async (req, res, next) => {
       where: {
         id
       },
-      include: [
-        {
-          model: Brand,
-          as: "brand",
-          required: false
-        }
-      ]
+      include: [{
+        model: Brand,
+        as: "brand",
+        required: false
+      }]
     });
   });
 };
@@ -74,8 +74,7 @@ productsService.getProduct = async (req, res, next) => {
 productsService.findAndPaginationProduct = async (req, res, next) => {
   // define condition in SQL
   const condition = {
-    [Op.or]: [
-      {
+    [Op.or]: [{
         name: {
           [Op.substring]: req.body.query
         }
@@ -100,13 +99,11 @@ productsService.findAndPaginationProduct = async (req, res, next) => {
       where: condition,
       offset: 0,
       limit: 3,
-      include: [
-        {
-          model: Brand,
-          as: "brand",
-          required: true
-        }
-      ]
+      include: [{
+        model: Brand,
+        as: "brand",
+        required: true
+      }]
     }).rows;
   });
 };
@@ -118,7 +115,11 @@ productsService.findAndPaginationProduct = async (req, res, next) => {
  * @return {List} a list of product
  */
 productsService.findAndPaginationProductByQuery = async (req, res, next) => {
-  const { query, offset, limit } = req.body;
+  const {
+    query,
+    offset,
+    limit
+  } = req.body;
 
   // setting content of message
   const messageResponse = new MessageResponse();
@@ -136,6 +137,7 @@ productsService.findAndPaginationProductByQuery = async (req, res, next) => {
       type: Product.sequelize.QueryTypes.SELECT
     });
   });
+
 };
 
 /**
@@ -145,7 +147,13 @@ productsService.findAndPaginationProductByQuery = async (req, res, next) => {
  * @return {Product} a new product
  */
 productsService.createProduct = async (req, res, next) => {
-  const { name, price, status, image, brandId } = req.body;
+  const {
+    name,
+    price,
+    status,
+    image,
+    brandId
+  } = req.body;
 
   // setting content of message
   const messageResponse = new MessageResponse();
@@ -154,18 +162,15 @@ productsService.createProduct = async (req, res, next) => {
 
   // handle process data
   common.processData(messageResponse, req, res, next, () => {
-    return Product.create(
-      {
-        name,
-        price,
-        status,
-        image,
-        brandId
-      },
-      {
-        fields: ["name", "price", "status", "imageUrl", "brandId"]
-      }
-    );
+    return Product.create({
+      name,
+      price,
+      status,
+      image,
+      brandId
+    }, {
+      fields: ["name", "price", "status", "imageUrl", "brandId"]
+    });
   });
 };
 
@@ -176,8 +181,16 @@ productsService.createProduct = async (req, res, next) => {
  * @return {Product} a updated product
  */
 productsService.editProduct = async (req, res, next) => {
-  const { id } = req.params;
-  const { name, price, status, image, brandId } = req.body;
+  const {
+    id
+  } = req.params;
+  const {
+    name,
+    price,
+    status,
+    image,
+    brandId
+  } = req.body;
 
   let product = await Product.findAll({
     where: {
@@ -191,20 +204,17 @@ productsService.editProduct = async (req, res, next) => {
 
   // handle process data
   common.processData(messageResponse, req, res, next, () => {
-    return Product.update(
-      {
-        name: name ? name : product.name,
-        price: price ? price : product.price,
-        status: status ? status : product.status,
-        image: image ? image : product.image,
-        brandId: brandId ? brandId : product.brandId
-      },
-      {
-        where: {
-          id
-        }
+    return Product.update({
+      name: name ? name : product.name,
+      price: price ? price : product.price,
+      status: status ? status : product.status,
+      image: image ? image : product.image,
+      brandId: brandId ? brandId : product.brandId
+    }, {
+      where: {
+        id
       }
-    );
+    });
   });
 };
 
@@ -215,7 +225,9 @@ productsService.editProduct = async (req, res, next) => {
  * @return {int} a number deleted record
  */
 productsService.deleteProduct = async (req, res, next) => {
-  const { id } = req.params;
+  const {
+    id
+  } = req.params;
 
   // setting content of message
   const messageResponse = new MessageResponse();

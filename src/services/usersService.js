@@ -2,10 +2,11 @@ import {
     User
 } from './../models/User';
 import message from '../constants/message';
-import authConfig from '../config/auth';
+import auth from '../config/auth';
 import MessageResponse from '../common/MessageResponse';
-import handleUtil from '../util/handleUtil';
+import handleError from '../handlers/handleError';
 import jwtUtil from '../util/jwtUtil';
+import handleSuccess from '../handlers/handleSuccess';
 
 var tokenList = {};
 var usersService = {};
@@ -44,11 +45,11 @@ usersService.register = async (req, res, next) => {
             messageResponse.msg = message.MSG_SUCCESS_2;
 
             // handle when successful
-            handleUtil.success(newUser, messageResponse, req, res);
+            handleSuccess.processSuccess(newUser, messageResponse, req, res);
         }
     } catch (error) {
         // handle error system
-        handleUtil.exceptionSystem(error, next);
+        handleError.exceptionSystem(error, next);
     }
 };
 
@@ -83,12 +84,12 @@ usersService.login = async (req, res, next) => {
                 }
 
                 // create access token
-                const accessToken = await jwtUtil.signToken(payload, authConfig.secretToken, {
-                    expiresIn: authConfig.expiresToken
+                const accessToken = await jwtUtil.signToken(payload, auth.secretToken, {
+                    expiresIn: auth.expiresToken
                 });
                 // create refresh token to update access token
-                const refreshToken = await jwtUtil.signToken(payload, authConfig.secretRefreshToken, {
-                    expiresIn: authConfig.expiresRefreshToken
+                const refreshToken = await jwtUtil.signToken(payload, auth.secretRefreshToken, {
+                    expiresIn: auth.expiresRefreshToken
                 })
                 // save refresh token and information of user
                 tokenList[refreshToken] = user;
@@ -103,18 +104,18 @@ usersService.login = async (req, res, next) => {
                 user[0].dataValues.refreshToken = refreshToken;
 
                 // handle when successful
-                handleUtil.success(user[0].dataValues, messageResponse, req, res);
+                handleSuccess.processSuccess(user[0].dataValues, messageResponse, req, res);
             } else {
                 // handle error when data not found
-                handleUtil.exceptionNotFound(next);
+                handleError.exceptionNotFound(next);
             }
         } else {
             // handle error when data not found
-            handleUtil.exceptionNotFound(next);
+            handleError.exceptionNotFound(next);
         }
     } catch (error) {
         // handle error system
-        handleUtil.exceptionSystem(error, next);
+        handleError.exceptionSystem(error, next);
     }
 };
 
@@ -132,15 +133,15 @@ usersService.refreshToken = async (req, res, next) => {
     if (refreshToken && refreshToken in tokenList) {
         try {
             // verify refresh token
-            await jwtUtil.verifyToken(refreshToken, authConfig.secretRefreshToken);
+            await jwtUtil.verifyToken(refreshToken, auth.secretRefreshToken);
             // get user from refresh token
             const user = tokenList[refreshToken];
             const payload = {
                 user
             }
             //create a new access token for this user
-            const accessToken = await jwtUtil.signToken(payload, authConfig.secretToken, {
-                expiresIn: authConfig.expiresToken
+            const accessToken = await jwtUtil.signToken(payload, auth.secretToken, {
+                expiresIn: auth.expiresToken
             });
             // setting content of message
             const messageResponse = new MessageResponse();
@@ -151,17 +152,17 @@ usersService.refreshToken = async (req, res, next) => {
             user[0].dataValues.accessToken = accessToken;
 
             // handle when successful
-            handleUtil.success(user, messageResponse, req, res);
+            handleSuccess.processSuccess(user, messageResponse, req, res);
 
         } catch (error) {
 
             // handle error system
-            handleUtil.exceptionSystem(error, next);
+            handleError.exceptionSystem(error, next);
         }
     } else {
         // handle error authentication
         let messageResponse = new MessageResponse(['refresh token'], message.MSG_AUTH_3);
-        handleUtil.exceptionAuthentication(messageResponse, next);
+        handleError.exceptionAuthentication(messageResponse, next);
     }
 }
 
@@ -187,7 +188,7 @@ usersService.getUser = async (req, res, next) => {
     messageResponse.msg = message.MSG_SUCCESS_1;
 
     // handle when successful
-    handleUtil.success(user, messageResponse, req, res);
+    handleSuccess.processSuccess(user, messageResponse, req, res);
 
 };
 

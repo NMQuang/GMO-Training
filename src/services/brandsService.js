@@ -4,8 +4,9 @@ import message from '../constants/message.js';
 import {
     Op
 } from '../config/database';
-import handleUtil from '../util/handleUtil';
+import handleError from '../handlers/handleError';
 import MessageResponse from '../common/MessageResponse';
+import handleSuccess from '../handlers/handleSuccess';
 
 var brandsService = {};
 
@@ -26,10 +27,10 @@ brandsService.getAllBrand = async (req, res, next) => {
         messageResponse.msg = message.MSG_SUCCESS_1;
 
         // handle when successful
-        handleUtil.success(brands, messageResponse, req, res);
+        handleSuccess.processSuccess(brands, messageResponse, req, res);
     } catch (error) {
         // handle error system
-        handleUtil.exceptionSystem(error, next);
+        handleError.exceptionSystem(error, next);
     }
 };
 
@@ -63,14 +64,14 @@ brandsService.getBrand = async (req, res, next) => {
             messageResponse.msg = message.MSG_SUCCESS_1;
 
             // handle when successful
-            handleUtil.success(brands, messageResponse, req, res);
+            handleSuccess.processSuccess(brands, messageResponse, req, res);
         } else {
             // handle error when data not found
-            handleUtil.exceptionNotFound(next);
+            handleError.exceptionNotFound(next);
         }
     } catch (error) {
         // handle error system
-        handleUtil.exceptionSystem(error, next);
+        handleError.exceptionSystem(error, next);
     }
 };
 
@@ -100,14 +101,14 @@ brandsService.getBrandQuery = async (req, res, next) => {
             messageResponse.msg = message.MSG_SUCCESS_1;
 
             // handle when successful
-            handleUtil.success(brands, messageResponse, req, res);
+            handleSuccess.processSuccess(brands, messageResponse, req, res);
         } else {
             // handle error when data not found
-            handleUtil.exceptionNotFound(next);
+            handleError.exceptionNotFound(next);
         }
     } catch (error) {
         // handle error system
-        handleUtil.exceptionSystem(error, next);
+        handleError.exceptionSystem(error, next);
     }
 };
 
@@ -151,15 +152,15 @@ brandsService.findBrand = async (req, res, next) => {
             messageResponse.msg = message.MSG_SUCCESS_1;
 
             // handle when successful
-            handleUtil.success(brands, messageResponse, req, res);
+            handleSuccess.processSuccess(brands, messageResponse, req, res);
 
         } else {
             // handle error when data not found
-            handleUtil.exceptionNotFound(next);
+            handleError.exceptionNotFound(next);
         }
     } catch (error) {
         // handle error system
-        handleUtil.exceptionSystem(error, next);
+        handleError.exceptionSystem(error, next);
     }
 };
 
@@ -193,11 +194,11 @@ brandsService.createBrand = async (req, res, next) => {
             messageResponse.msg = message.MSG_SUCCESS_2;
 
             // handle when successful
-            handleUtil.success(newBrand, messageResponse, req, res);
+            handleSuccess.processSuccess(newBrand, messageResponse, req, res);
         }
     } catch (error) {
         // handle error system
-        handleUtil.exceptionSystem(error, next);
+        handleError.exceptionSystem(error, next);
     }
 };
 
@@ -241,14 +242,14 @@ brandsService.editBrand = async (req, res, next) => {
             messageResponse.msg = message.MSG_SUCCESS_3;
 
             // handle when successful
-            handleUtil.success(brand, messageResponse, req, res);
+            handleSuccess.processSuccess(brand, messageResponse, req, res);
         } else {
             // handle error when data not found
-            handleUtil.exceptionNotFound(next);
+            handleError.exceptionNotFound(next);
         }
     } catch (error) {
         // handle error system
-        handleUtil.exceptionSystem(error, next);
+        handleError.exceptionSystem(error, next);
     }
 };
 
@@ -280,14 +281,14 @@ brandsService.deleteBrand = async (req, res, next) => {
             messageResponse.msg = message.MSG_SUCCESS_4;
 
             // handle when successful
-            handleUtil.success(countDeletedRecord, messageResponse, req, res);
+            handleSuccess.processSuccess(countDeletedRecord, messageResponse, req, res);
         } else {
             // handle error when data not found
-            handleUtil.exceptionNotFound(next);
+            handleError.exceptionNotFound(next);
         }
     } catch (error) {
         // handle error system
-        handleUtil.exceptionSystem(error, next);
+        handleError.exceptionSystem(error, next);
     }
 };
 

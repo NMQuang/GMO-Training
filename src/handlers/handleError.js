@@ -1,88 +1,19 @@
-import authConfig from '../config/auth';
 import common from '../common/common';
 import message from '../constants/message';
 import ApiResponseError from '../common/ApiResponseError';
-import security from '../auth/security';
 import MessageResponse from '../common/MessageResponse';
 import resultCode from '../constants/resultCode';
-import ApiResponseSuccess from '../common/ApiResponseSuccess';
-import jwtUtil from './jwtUtil';
 import status from '../constants/status';
 
-/**
- * handle common:
- * authentication
- * exception
- * error
- * success
- */
-var handleUtil = {}
-
-/**
- * authorization
- * @param {} req
- * @param {} res
- * @param {} next
- */
-handleUtil.authorization = async (req, res, next) => {
-
-    // get original url
-    const urlOri = req.originalUrl;
-    var url = urlOri;
-
-    // split url if url contain a numeric
-    if (common.checkContain(urlOri)) {
-        url = common.splitString(urlOri, '/');
-    }
-
-    /**
-     * authentication url
-     * if true: don't need to authenticate url
-     * if false: must authentication url
-     */
-    if (security.authenticationUrl.includes(url)) {
-        next();
-    } else {
-        const accessToken = req.headers['x-access-token'];
-
-        try {
-            if (!accessToken) {
-
-                // handle error authentication when don't have token
-                let messageResponse = new MessageResponse(['token'], message.MSG_AUTH_1);
-                handleUtil.exceptionAuthentication(messageResponse, next);
-            } else {
-                // verify access token
-                const decoded = await jwtUtil.verifyToken(accessToken, authConfig.secretToken);
-                // check access token expired or not
-                if (decoded.exp * 1000 <= Date.now()) {
-
-                    // handle error authentication when toke is expired
-                    let messageResponse = new MessageResponse(['token'], message.MSG_AUTH_4);
-                    handleUtil.exceptionAuthentication(messageResponse, next);
-                } else {
-
-                    // set user and access token for request
-                    req.accessToken = accessToken;
-                    req.user = decoded.user[0];
-
-                    // go to middleware: getUser
-                    next();
-                }
-            }
-        } catch (error) {
-            // handle error system
-            handleUtil.exceptionSystem(error, next);
-        }
-    }
-};
+// handle error
+const handleError = {};
 
 /**
  * handle error when data not found
  * @param {} next
  * @return {} next to middeware
  */
-handleUtil.exceptionNotFound = (next) => {
+handleError.exceptionNotFound = (next) => {
     let error = {};
     error.resultCode = resultCode.CODE_ERROR_NOTFOUND;
     next(error);
@@ -94,7 +25,7 @@ handleUtil.exceptionNotFound = (next) => {
  * @param {} next
  * @return {} next to middeware
  */
-handleUtil.exceptionSystem = (error, next) => {
+handleError.exceptionSystem = (error, next) => {
     if (error.name === 'SequelizeDatabaseError') {
         error.resultCode = resultCode.CODE_ERROR_SQL;
     } else if (error.name === 'JsonWebTokenError') {
@@ -111,7 +42,7 @@ handleUtil.exceptionSystem = (error, next) => {
  * @param {} next
  * @return {} next to middeware
  */
-handleUtil.exceptionValidate = (error, next) => {
+handleError.exceptionValidate = (error, next) => {
     error.resultCode = resultCode.CODE_ERROR_VALIDATE;
     next(error);
 }
@@ -122,7 +53,7 @@ handleUtil.exceptionValidate = (error, next) => {
  * @param {} next
  * @return {} next to middeware
  */
-handleUtil.exceptionAuthentication = (message, next) => {
+handleError.exceptionAuthentication = (message, next) => {
     let error = {};
     error.message = message;
     error.resultCode = resultCode.CODE_ERROR_AUTHENTICATION;
@@ -137,7 +68,7 @@ handleUtil.exceptionAuthentication = (message, next) => {
  * @param {} next
  * @return {ApiResponseError} a message error
  */
-handleUtil.error = (error, req, res, next) => {
+handleError.processError = (error, req, res, next) => {
 
     var responseError = new ApiResponseError();
     // control result code of error
@@ -210,21 +141,4 @@ handleUtil.error = (error, req, res, next) => {
     return res.json(responseError);
 }
 
-/**
- * handle when process is successful
- * @param {Object} data
- * @param {MessageResponse} info message
- * @param {} req
- * @param {} res
- * @return {ApiResponseSuccess} 
- */
-handleUtil.success = (data, messageResponse, req, res) => {
-    const responseSuccess = new ApiResponseSuccess();
-    responseSuccess.data = data;
-    responseSuccess.resultCode = resultCode.CODE_SUCCESS;
-    responseSuccess.message = common.parseMessage(messageResponse.msg, [messageResponse.param]);
-    res.status(status.STT_SUCCESS_OK);
-    return res.json(responseSuccess);
-}
-
-export default handleUtil;
+export default handleError;
