@@ -1,5 +1,6 @@
 import handleError from "../handlers/handleError";
 import handleSuccess from "../handlers/handleSuccess";
+import log from "../loggers/log";
 
 var common = {};
 
@@ -53,15 +54,50 @@ common.processData = async (messageResponse, req, res, next, callback) => {
             handleError.exceptionNotFound(next);
         }
     } catch (error) {
+        // write log error
+        log.error(error.message);
         // handle error system
         handleError.exceptionSystem(error, next);
     }
 };
 
-// common.handleSql = sql => {
-//     const sqlCount = 'COUNT(*)';
-//     common.splitString(sql,'FROM');
-//     return sql.replace(common.splitString(sql,'FROM'), () => param[i++]);
-// };
+/**
+ * copy value from object: inputObj to another object: outputObj
+ * @param {Object} inputObj
+ * @param {Object} outputObj
+ * @param {String} param: option
+ * @return {Object} outputObj
+ */
+common.copyValueObject = (inputObj, outputObj, param) => {
+
+    if (typeof param === 'undefined') {
+        let listColumn = Object.keys(outputObj);
+        Object.keys(inputObj).forEach(key => {
+            if (listColumn.includes(key)) {
+                outputObj[key] = inputObj[key];
+            }
+        });
+    } else {
+        outputObj = {
+            ...inputObj,
+            param
+        };
+    }
+    return outputObj;
+};
+
+/**
+ * copy value from list to another list
+ * @param {List} inputList
+ * @param {Object} outputObj
+ * @return {List} new list
+ */
+common.copyValueList = (inputList, outputObj) => {
+    let result = [];
+    inputList.forEach(obj => {
+        result.push(common.copyValueObject(obj, outputObj));
+    });
+    return result;
+}
 
 export default common;

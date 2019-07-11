@@ -128,6 +128,7 @@ productsService.findAndPaginationProductByQuery = async (req, res, next) => {
 
   // handle process data
   common.processData(messageResponse, req, res, next, () => {
+    //todo
     return Product.sequelize.query(productsSQL.findAndPaginationProduct, {
       replacements: {
         query: "%" + query + "%",

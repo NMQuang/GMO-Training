@@ -7,6 +7,8 @@ import MessageResponse from '../common/MessageResponse';
 import handleError from '../handlers/handleError';
 import jwtUtil from '../util/jwtUtil';
 import handleSuccess from '../handlers/handleSuccess';
+import common from '../common/common';
+import usersDto from '../dto/usersDto';
 
 var tokenList = {};
 var usersService = {};
@@ -178,17 +180,18 @@ usersService.getUser = async (req, res, next) => {
         user
     } = req;
 
-    user = [{
-        ...user,
-        accessToken
-    }];
+    // user = [{
+    //     ...user,
+    //     accessToken
+    // }];
+    let userDto = [common.copyValueObject(user, new usersDto(), accessToken)];
     // setting content of message
     const messageResponse = new MessageResponse();
     messageResponse.param = User.name;
     messageResponse.msg = message.MSG_SUCCESS_1;
 
     // handle when successful
-    handleSuccess.processSuccess(user, messageResponse, req, res);
+    handleSuccess.processSuccess(userDto, messageResponse, req, res);
 
 };
 
